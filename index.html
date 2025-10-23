@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSA Encryption/Decryption - Terminal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', 'Consolas', monospace;
+            background: #0a0e27;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #00ff00;
+        }
+
+        .container {
+            background: #1a1d2e;
+            border: 2px solid #00ff00;
+            border-radius: 8px;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.3), inset 0 0 20px rgba(0, 255, 0, 0.05);
+            max-width: 900px;
+            width: 100%;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .terminal-header {
+            background: #0d1117;
+            padding: 10px 20px;
+            border-bottom: 2px solid #00ff00;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .terminal-button {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .btn-close { background: #ff5f56; }
+        .btn-minimize { background: #ffbd2e; }
+        .btn-maximize { background: #27c93f; }
+
+        .terminal-title {
+            margin-left: 15px;
+            color: #00ff00;
+            font-size: 0.9em;
+        }
+
+        .terminal-body {
+            padding: 30px;
+        }
+
+        h1 {
+            color: #00ff00;
+            margin-bottom: 5px;
+            font-size: 1.8em;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+
+        h1:before {
+            content: "root@sgbit:~$ ";
+            color: #00aaff;
+        }
+
+        .subtitle {
+            color: #00aaff;
+            margin-bottom: 25px;
+            font-size: 0.9em;
+        }
+
+        .subtitle:before {
+            content: "// ";
+            color: #666;
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: 1px solid #00ff00;
+            background: transparent;
+            color: #00ff00;
+            font-size: 1em;
+            font-family: 'Courier New', monospace;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .mode-btn:before {
+            content: "[ ] ";
+        }
+
+        .mode-btn.active:before {
+            content: "[✓] ";
+        }
+
+        .mode-btn:hover {
+            background: rgba(0, 255, 0, 0.1);
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+        }
+
+        .mode-btn.active {
+            background: rgba(0, 255, 0, 0.15);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
+        }
+
+        .key-section {
+            background: rgba(0, 20, 40, 0.5);
+            padding: 20px;
+            border: 1px solid #00ff00;
+            border-radius: 4px;
+            margin-bottom: 25px;
+        }
+
+        .key-section h3 {
+            color: #00aaff;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .key-section h3:before {
+            content: ">>> ";
+            color: #00ff00;
+        }
+
+        .key-display {
+            background: #0a0e27;
+            padding: 12px;
+            border: 1px solid #00ff00;
+            border-radius: 3px;
+            margin-bottom: 10px;
+            word-wrap: break-word;
+            font-size: 0.85em;
+            color: #ffaa00;
+        }
+
+        .key-label {
+            color: #00aaff;
+            margin-bottom: 5px;
+        }
+
+        .key-label:before {
+            content: "$ ";
+            color: #00ff00;
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 10px;
+            background: transparent;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            border-radius: 4px;
+            font-size: 0.95em;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .generate-btn:hover {
+            background: rgba(0, 255, 0, 0.2);
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
+        }
+
+        .generate-btn:before {
+            content: "> ";
+        }
+
+        .generate-btn.manual-btn {
+            border-color: #ffaa00;
+            color: #ffaa00;
+        }
+
+        .generate-btn.manual-btn:hover {
+            background: rgba(255, 170, 0, 0.2);
+            box-shadow: 0 0 15px rgba(255, 170, 0, 0.4);
+        }
+
+        .input-section {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #00aaff;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        label:before {
+            content: "$ ";
+            color: #00ff00;
+        }
+
+        textarea, input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #00ff00;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+            background: #0a0e27;
+            color: #00ff00;
+            transition: all 0.3s ease;
+        }
+
+        textarea:focus, input[type="text"]:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: #00ff00;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+        }
+
+        textarea::placeholder, input::placeholder {
+            color: #004400;
+        }
+
+        textarea {
+            min-height: 100px;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 14px;
+            background: transparent;
+            color: #00ff00;
+            border: 2px solid #00ff00;
+            border-radius: 4px;
+            font-size: 1.1em;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .action-btn:before {
+            content: ">> ";
+        }
+
+        .action-btn:hover {
+            background: rgba(0, 255, 0, 0.2);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+            transform: translateX(0px);
+        }
+
+        .output-section {
+            background: rgba(0, 20, 40, 0.5);
+            padding: 20px;
+            border: 1px solid #00ff00;
+            border-radius: 4px;
+            margin-top: 25px;
+        }
+
+        .output-section h3 {
+            color: #00aaff;
+            margin-bottom: 15px;
+        }
+
+        .output-section h3:before {
+            content: ">>> ";
+            color: #00ff00;
+        }
+
+        .output-box {
+            background: #0a0e27;
+            padding: 15px;
+            border: 1px solid #00ff00;
+            border-radius: 3px;
+            min-height: 100px;
+            word-wrap: break-word;
+            color: #00ff00;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        .output-box:before {
+            content: "$ ";
+            color: #00aaff;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #manualKeysSection {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px dashed #00ff00;
+        }
+
+        #manualKeysSection label {
+            font-size: 0.85em;
+        }
+
+        #manualKeysSection input {
+            margin-bottom: 12px;
+        }
+
+        strong {
+            color: #ffaa00;
+        }
+
+        .blink {
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0a0e27;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #00ff00;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00aa00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="terminal-header">
+            <span class="terminal-button btn-close"></span>
+            <span class="terminal-button btn-minimize"></span>
+            <span class="terminal-button btn-maximize"></span>
+            <span class="terminal-title">sgbit@rsa-encryption: ~/crypto</span>
+        </div>
+        
+        <div class="terminal-body">
+            <h1>RSA ENCRYPTION</h1>
+            <p class="subtitle">Secure Encryption & Decryption Tool</p>
+
+            <div class="mode-selector">
+                <button class="mode-btn active" id="encryptModeBtn" onclick="switchMode('encrypt')">
+                    ENCRYPT
+                </button>
+                <button class="mode-btn" id="decryptModeBtn" onclick="switchMode('decrypt')">
+                    DECRYPT
+                </button>
+            </div>
+
+            <div class="key-section">
+                <h3>RSA KEYS</h3>
+                <div class="key-display">
+                    <div class="key-label">Public Key (n, e):</div>
+                    <div id="publicKey">Awaiting key generation...</div>
+                </div>
+                <div class="key-display">
+                    <div class="key-label">Private Key (n, d):</div>
+                    <div id="privateKey">Awaiting key generation...</div>
+                </div>
+                <button class="generate-btn" onclick="generateKeys()">GENERATE RANDOM KEYS</button>
+                <button class="generate-btn manual-btn" onclick="toggleManualKeys()">ENTER KEYS MANUALLY</button>
+                
+                <div id="manualKeysSection" class="hidden">
+                    <div>
+                        <label>Public Key - Enter n:</label>
+                        <input type="number" id="manualN" placeholder="e.g., 3233">
+                    </div>
+                    <div>
+                        <label>Public Key - Enter e:</label>
+                        <input type="number" id="manualE" placeholder="e.g., 17">
+                    </div>
+                    <div>
+                        <label>Private Key - Enter d:</label>
+                        <input type="number" id="manualD" placeholder="e.g., 2753">
+                    </div>
+                    <button class="generate-btn manual-btn" onclick="setManualKeys()">SET THESE KEYS</button>
+                </div>
+            </div>
+
+            <div id="encryptSection">
+                <div class="input-section">
+                    <label for="plaintext">Enter Message to Encrypt:</label>
+                    <textarea id="plaintext" placeholder="Type your secret message here..."></textarea>
+                </div>
+                <button class="action-btn" onclick="encryptMessage()">ENCRYPT MESSAGE</button>
+            </div>
+
+            <div id="decryptSection" class="hidden">
+                <div class="input-section">
+                    <label for="ciphertext">Enter Encrypted Message:</label>
+                    <textarea id="ciphertext" placeholder="Paste encrypted message here..."></textarea>
+                </div>
+                <button class="action-btn" onclick="decryptMessage()">DECRYPT MESSAGE</button>
+            </div>
+
+            <div class="output-section">
+                <h3>OUTPUT</h3>
+                <div class="output-box" id="output">Initializing...<span class="blink">_</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let publicKey = null;
+        let privateKey = null;
+
+        function isPrime(num) {
+            if (num < 2) return false;
+            if (num === 2) return true;
+            if (num % 2 === 0) return false;
+            
+            for (let i = 3; i <= Math.sqrt(num); i += 2) {
+                if (num % i === 0) return false;
+            }
+            return true;
+        }
+
+        function generatePrime(min, max) {
+            let prime = Math.floor(Math.random() * (max - min + 1)) + min;
+            while (!isPrime(prime)) {
+                prime = Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+            return prime;
+        }
+
+        function gcd(a, b) {
+            while (b !== 0) {
+                let temp = b;
+                b = a % b;
+                a = temp;
+            }
+            return a;
+        }
+
+        function modInverse(e, phi) {
+            let m0 = phi, t, q;
+            let x0 = 0, x1 = 1;
+
+            if (phi === 1) return 0;
+
+            while (e > 1) {
+                q = Math.floor(e / phi);
+                t = phi;
+                phi = e % phi;
+                e = t;
+                t = x0;
+                x0 = x1 - q * x0;
+                x1 = t;
+            }
+
+            if (x1 < 0) x1 += m0;
+
+            return x1;
+        }
+
+        function modPow(base, exp, mod) {
+            let result = 1;
+            base = base % mod;
+            
+            while (exp > 0) {
+                if (exp % 2 === 1) {
+                    result = (result * base) % mod;
+                }
+                exp = Math.floor(exp / 2);
+                base = (base * base) % mod;
+            }
+            
+            return result;
+        }
+
+        function generateKeys() {
+            const p = generatePrime(50, 150);
+            let q = generatePrime(50, 150);
+            while (q === p) {
+                q = generatePrime(50, 150);
+            }
+
+            const n = p * q;
+            const phi = (p - 1) * (q - 1);
+
+            let e = 65537;
+            if (e >= phi) {
+                e = 3;
+                while (gcd(e, phi) !== 1) {
+                    e += 2;
+                }
+            }
+
+            const d = modInverse(e, phi);
+
+            publicKey = { n: n, e: e };
+            privateKey = { n: n, d: d };
+
+            document.getElementById('publicKey').textContent = `(n: ${n}, e: ${e})`;
+            document.getElementById('privateKey').textContent = `(n: ${n}, d: ${d})`;
+            document.getElementById('output').textContent = '[SUCCESS] Keys generated successfully';
+        }
+
+        function toggleManualKeys() {
+            const manualSection = document.getElementById('manualKeysSection');
+            manualSection.classList.toggle('hidden');
+        }
+
+        function setManualKeys() {
+            const nInput = parseInt(document.getElementById('manualN').value);
+            const eInput = parseInt(document.getElementById('manualE').value);
+            const dInput = parseInt(document.getElementById('manualD').value);
+
+            if (!nInput || !eInput || !dInput) {
+                document.getElementById('output').textContent = '[ERROR] Please enter all three values (n, e, d)!';
+                return;
+            }
+
+            if (nInput <= 0 || eInput <= 0 || dInput <= 0) {
+                document.getElementById('output').textContent = '[ERROR] All values must be positive integers!';
+                return;
+            }
+
+            if (eInput >= nInput) {
+                document.getElementById('output').textContent = '[ERROR] e must be less than n!';
+                return;
+            }
+
+            if (dInput >= nInput) {
+                document.getElementById('output').textContent = '[ERROR] d must be less than n!';
+                return;
+            }
+
+            publicKey = { n: nInput, e: eInput };
+            privateKey = { n: nInput, d: dInput };
+
+            document.getElementById('publicKey').textContent = `(n: ${nInput}, e: ${eInput})`;
+            document.getElementById('privateKey').textContent = `(n: ${nInput}, d: ${dInput})`;
+            document.getElementById('output').innerHTML = 
+                `[SUCCESS] RSA keys set successfully<br><br>` +
+                `Public Key: (n: ${nInput}, e: ${eInput})<br>` +
+                `Private Key: (n: ${nInput}, d: ${dInput})<br><br>` +
+                `Note: Ensure keys are mathematically valid`;
+        }
+
+        function encryptMessage() {
+            if (!publicKey) {
+                document.getElementById('output').textContent = '[ERROR] Please generate keys first!';
+                return;
+            }
+
+            const plaintext = document.getElementById('plaintext').value;
+            if (!plaintext) {
+                document.getElementById('output').textContent = '[ERROR] Please enter a message to encrypt!';
+                return;
+            }
+
+            try {
+                const encrypted = [];
+                for (let i = 0; i < plaintext.length; i++) {
+                    const charCode = plaintext.charCodeAt(i);
+                    const encryptedChar = modPow(charCode, publicKey.e, publicKey.n);
+                    encrypted.push(encryptedChar);
+                }
+
+                const encryptedMessage = encrypted.join(',');
+                document.getElementById('output').innerHTML = 
+                    `[SUCCESS] Encryption complete<br><br>` +
+                    `Encrypted message:<br>${encryptedMessage}`;
+            } catch (error) {
+                document.getElementById('output').textContent = '[ERROR] Encryption failed: ' + error.message;
+            }
+        }
+
+        function decryptMessage() {
+            if (!privateKey) {
+                document.getElementById('output').textContent = '[ERROR] Please generate keys first!';
+                return;
+            }
+            const ciphertext = document.getElementById('ciphertext').value;
+            if (!ciphertext) {
+                document.getElementById('output').textContent = '[ERROR] Please enter an encrypted message!';
+                return;
+            }
+
+            try {
+                const encrypted = ciphertext.split(',').map(num => parseInt(num.trim()));
+
+                let decrypted = '';
+                for (let i = 0; i < encrypted.length; i++) {
+                    const decryptedChar = modPow(encrypted[i], privateKey.d, privateKey.n);
+                    decrypted += String.fromCharCode(decryptedChar);
+                }
+
+                document.getElementById('output').innerHTML = 
+                    `[SUCCESS] Decryption complete<br><br>` +
+                    `Original message:<br>${decrypted}`;
+            } catch (error) {
+                document.getElementById('output').textContent = '[ERROR] Decryption failed: ' + error.message + '\n\nVerify the encrypted message is complete';
+            }
+        }
+
+        function switchMode(mode) {
+            const encryptBtn = document.getElementById('encryptModeBtn');
+            const decryptBtn = document.getElementById('decryptModeBtn');
+            const encryptSection = document.getElementById('encryptSection');
+            const decryptSection = document.getElementById('decryptSection');
+
+            if (mode === 'encrypt') {
+                encryptBtn.classList.add('active');
+                decryptBtn.classList.remove('active');
+                encryptSection.classList.remove('hidden');
+                decryptSection.classList.add('hidden');
+                document.getElementById('output').textContent = '[READY] Encryption mode active';
+            } else {
+                decryptBtn.classList.add('active');
+                encryptBtn.classList.remove('active');
+                decryptSection.classList.remove('hidden');
+                encryptSection.classList.add('hidden');
+                document.getElementById('output').textContent = '[READY] Decryption mode active';
+            }
+        }
+
+        window.onload = function() {
+            generateKeys();
+        };
+    </script>
+</body>
+</html>
